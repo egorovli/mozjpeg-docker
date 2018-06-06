@@ -1,26 +1,20 @@
-FROM alpine:latest
+FROM alpine:latest as builder
 LABEL maintainer="Anton Egorov <anton@egorov.li>"
 
-RUN apk --update add \
+RUN apk --update --no-cache add \
   autoconf \
   automake \
   build-base \
   git \
   libtool \
-  nasm \
-  && rm -rf /var/cache/apk/*
+  nasm
 
-WORKDIR /source
+WORKDIR /src/mozjpeg
 RUN git clone git://github.com/mozilla/mozjpeg.git ./
 
 RUN autoreconf -fiv \
   && ./configure \
-  && make install prefix=/usr/local libdir=/usr/local/lib64 \
-  && apk del \
-    autoconf \
-    automake \
-    build-base \
-    git \
-    libtool \
-    nasm \
-  && rm -rf /var/cache/apk/*
+  && make install prefix=/usr/local libdir=/usr/local/lib64
+
+FROM alpine:latest
+COPY --from=builder /usr/local /usr/local
