@@ -5,22 +5,24 @@ ARG tag=master
 
 RUN apk --update --no-cache add \
     build-base \
-    cmake \
-    git \
-    nasm
+    autoconf \
+    automake \
+    libtool \
+    pkgconf \
+    nasm \
+    tar
 
 WORKDIR /src/mozjpeg
+ADD https://github.com/mozilla/mozjpeg/archive/$tag.tar.gz ./
 
-RUN git clone git://github.com/mozilla/mozjpeg.git ./
-RUN if [[ $tag != "master" ]]; \
-    then git checkout $tag; \
-    fi
+RUN tar -xzf $tag.tar.gz
+RUN rm $tag.tar.gz
 
-RUN cmake -G "Unix Makefiles" \
-          -D CMAKE_INSTALL_PREFIX=/usr/local \
-          -D CMAKE_INSTALL_LIBDIR=/usr/local/lib64 \
-          -D PNG_SUPPORTED=0 \
-          . && \
+RUN SRC_DIR=$(ls -t1 -d mozjpeg-* | head -n1) && \
+    cd $SRC_DIR && \
+    autoreconf -fiv && \
+    cd .. && \
+    sh $SRC_DIR/configure && \
     make install \
          prefix=/usr/local \
          libdir=/usr/local/lib64
