@@ -1,7 +1,7 @@
 FROM alpine:latest as builder
 LABEL maintainer="Anton Egorov <anton@egorov.li>"
 
-ARG tag=master
+ARG tag=3.3.1
 
 RUN apk --update --no-cache add \
     build-base \
